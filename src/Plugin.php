@@ -3,16 +3,16 @@
  * PluginName Bootstrap class
  *
  * @since   {VERSION}
- * @link    https://github.com/wppunk/WPPlugin
+ * @link    {URL}
  * @license GPLv2 or later
  * @package PluginName
- * @author  WPPunk
+ * @author  {AUTHOR}
  */
 
 namespace PluginName;
 
-use PluginName\Front\Front;
-use PluginName\Admin\Settings;
+use Exception;
+use PluginName\Vendor\Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
  * Class Plugin
@@ -32,52 +32,73 @@ class Plugin {
 	/**
 	 * Plugin version
 	 *
-	 * @sicne {VERSION}
+	 * @since {VERSION}
 	 */
 	const VERSION = '{VERSION}';
-
 	/**
-	 * Get suffix for assets URLs
+	 * Dependency Injection Container.
 	 *
 	 * @since {VERSION}
 	 *
-	 * @return string
+	 * @var ContainerBuilder
 	 */
-	public static function get_assets_suffix(): string {
-		return PLUGIN_NAME_DEBUG ? '.min' : '';
+	private $container_builder;
+
+	/**
+	 * Plugin constructor.
+	 *
+	 * @param ContainerBuilder $container_builder Dependency Injection Container.
+	 */
+	public function __construct( ContainerBuilder $container_builder ) {
+		$this->container_builder = $container_builder;
 	}
 
 	/**
 	 * Run plugin
 	 *
 	 * @since {VERSION}
+	 *
+	 * @throws \Exception Object doesn't exist.
 	 */
-	public function run() {
-
-		if ( is_admin() ) {
-			$this->run_admin();
-		} else {
-			$this->run_front();
-		}
+	public function run(): void {
+		is_admin()
+			? $this->run_admin()
+			: $this->run_front();
 	}
 
 	/**
 	 * Run admin part
 	 *
 	 * @since {VERSION}
+	 *
+	 * @throws Exception Object doesn't exist.
 	 */
-	private function run_admin() {
-		$settings = new Settings();
-		$settings->hooks();
+	private function run_admin(): void {
+		$this->get_service( 'settings' )->hooks();
 	}
 
 	/**
 	 * Run frontend part
 	 *
 	 * @since {VERSION}
+	 *
+	 * @throws Exception Object doesn't exist.
 	 */
-	private function run_front() {
-		( new Front() )->hooks();
+	private function run_front(): void {
+		$this->get_service( 'front' )->hooks();
+	}
+
+	/**
+	 * Get service.
+	 *
+	 * @param string $container_name Container name.
+	 *
+	 * @return object|null Get object from DIC.
+	 *
+	 * @throws Exception Object doesn't exist.
+	 */
+	public function get_service( string $container_name ): ?object {
+		return $this->container_builder->get( $container_name );
 	}
 
 }

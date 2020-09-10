@@ -52,15 +52,21 @@ jobs:
 
             -   name: Install dependencies
                 working-directory: ${{ env.wp-plugins-directory }}
-                run: composer install
+                run: |
+                    composer install
+                    yarn install
 
             -   name: Validate Coding Standard
                 working-directory: ${{ env.wp-plugins-directory }}
-                run: .vendor/bin/composer cs
+                run: |
+                    composer cs
+                    yarn cs
 
             -   name: Run unit tests
                 working-directory: ${{ env.wp-plugins-directory }}
-                run: .vendor/bin/composer unit
+                run: |
+                    composer unit
+                    yarn unit
 
             -   name: Setup PHP
                 uses: shivammathur/setup-php@v2
@@ -84,7 +90,7 @@ jobs:
             -   name: Install WP
                 working-directory: ${{ env.wp-directory }}
                 run: |
-                    wp core download --version=5.4
+                    wp core download --version=5.5
                     wp config create --dbname="${{ env.DB_NAME }}" --dbuser="${{ env.DB_USER }}" --dbpass="${{ env.DB_PASSWORD }}" --dbhost="${{ env.DB_HOST }}" --dbprefix="${{ env.DB_TABLE_PREFIX }}"
                     wp core install --url="${{ env.WP_URL }}" --title="Test" --admin_user="${{ env.WP_ADMIN_USERNAME }}" --admin_password="${{ env.WP_ADMIN_PASSWORD }}" --admin_email="${{ env.WP_ADMIN_EMAIL }}" --skip-email
                     wp rewrite structure '/%postname%/' --hard
@@ -122,7 +128,7 @@ jobs:
 
             -   name: Run Acceptance Tests
                 working-directory: ${{ env.wp-plugins-directory }}
-                run: .vendor/bin/composer acceptance -- --env github-actions
+                run: composer acceptance -- --env github-actions
 
             -   name: Archive Codeception output
                 uses: actions/upload-artifact@v1
